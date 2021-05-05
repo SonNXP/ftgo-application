@@ -9,12 +9,25 @@ import java.util.Optional;
 
 @Entity
 @Table(name = "order_service_restaurants")
+/**
+ * @Access how JPA provider runtime accesses our entities to persist/load it:
+ *         fields or via properties (getters/setters).
+ * Note Sometimes you might want to annotate not fields but properties (e.g.
+ *       because you want to have some arbitrary logic in the getter or because
+ *       you prefer it that way.) In such situation you must define a getter and
+ *       annotate it as AccessType.PROPERTY.
+ */
 @Access(AccessType.FIELD)
 public class Restaurant {
 
   @Id
   private Long id;
 
+  /**
+   * @Embeddable annotation to declare that a class will be embedded by other
+   *             entities.
+   * @Embedded is used to embed a type into another entity.
+   */
   @Embedded
   @ElementCollection
   @CollectionTable(name = "order_service_restaurant_menu_items")

@@ -24,7 +24,6 @@ public class OrderController {
 
   private OrderRepository orderRepository;
 
-
   public OrderController(OrderService orderService, OrderRepository orderRepository) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
@@ -32,19 +31,18 @@ public class OrderController {
 
   @RequestMapping(method = RequestMethod.POST)
   public CreateOrderResponse create(@RequestBody CreateOrderRequest request) {
-    Order order = orderService.createOrder(request.getConsumerId(),
-            request.getRestaurantId(),
-            new DeliveryInformation(request.getDeliveryTime(), request.getDeliveryAddress()),
-            request.getLineItems().stream().map(x -> new MenuItemIdAndQuantity(x.getMenuItemId(), x.getQuantity())).collect(toList())
-    );
+    /** https://microservices.io/patterns/data/saga.html */
+    Order order = orderService.createOrder(request.getConsumerId(), request.getRestaurantId(),
+        new DeliveryInformation(request.getDeliveryTime(), request.getDeliveryAddress()), request.getLineItems()
+            .stream().map(x -> new MenuItemIdAndQuantity(x.getMenuItemId(), x.getQuantity())).collect(toList()));
     return new CreateOrderResponse(order.getId());
   }
-
 
   @RequestMapping(path = "/{orderId}", method = RequestMethod.GET)
   public ResponseEntity<GetOrderResponse> getOrder(@PathVariable long orderId) {
     Optional<Order> order = orderRepository.findById(orderId);
-    return order.map(o -> new ResponseEntity<>(makeGetOrderResponse(o), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    return order.map(o -> new ResponseEntity<>(makeGetOrderResponse(o), HttpStatus.OK))
+        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
   private GetOrderResponse makeGetOrderResponse(Order order) {
@@ -64,7 +62,8 @@ public class OrderController {
   @RequestMapping(path = "/{orderId}/revise", method = RequestMethod.POST)
   public ResponseEntity<GetOrderResponse> revise(@PathVariable long orderId, @RequestBody ReviseOrderRequest request) {
     try {
-      Order order = orderService.reviseOrder(orderId, new OrderRevision(Optional.empty(), request.getRevisedOrderLineItems()));
+      Order order = orderService.reviseOrder(orderId,
+          new OrderRevision(Optional.empty(), request.getRevisedOrderLineItems()));
       return new ResponseEntity<>(makeGetOrderResponse(order), HttpStatus.OK);
     } catch (OrderNotFoundException e) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);

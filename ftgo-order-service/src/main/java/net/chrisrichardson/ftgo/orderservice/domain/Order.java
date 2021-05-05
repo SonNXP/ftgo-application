@@ -21,14 +21,28 @@ import static java.util.Collections.singletonList;
 @Access(AccessType.FIELD)
 public class Order {
 
-  public static ResultWithDomainEvents<Order, OrderDomainEvent>
-  createOrder(long consumerId, Restaurant restaurant, DeliveryInformation deliveryInformation, List<OrderLineItem> orderLineItems) {
+  public static ResultWithDomainEvents<Order, OrderDomainEvent> createOrder(long consumerId, Restaurant restaurant,
+      DeliveryInformation deliveryInformation, List<OrderLineItem> orderLineItems) {
     Order order = new Order(consumerId, restaurant.getId(), deliveryInformation, orderLineItems);
-    List<OrderDomainEvent> events = singletonList(new OrderCreatedEvent(
-            new OrderDetails(consumerId, restaurant.getId(), orderLineItems,
-                    order.getOrderTotal()),
-            deliveryInformation.getDeliveryAddress(),
-            restaurant.getName()));
+    /**
+     * The singletonList() method of java.util.Collections class is used to return
+     * an immutable list containing only the specified object. The returned list is
+     * serializable. This list will always contain only one element thus the name
+     * singleton list. When we try to add/remove an element on the returned
+     * singleton list, it would give UnsupportedOperationException.
+     */
+    /**
+     * An event is something that has happened in the past. A domain event is,
+     * something that happened in the domain that you want other parts of the same
+     * domain (in-process) to be aware of. The notified parts usually react somehow
+     * to the events. An important benefit of domain events is that side effects can
+     * be expressed explicitly.
+     * https://docs.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation#:~:text=A%20domain%20event%20is%2C%20something,effects%20can%20be%20expressed%20explicitly.
+     */
+    List<OrderDomainEvent> events = singletonList(
+        new OrderCreatedEvent(new OrderDetails(consumerId, restaurant.getId(), orderLineItems, order.getOrderTotal()),
+            deliveryInformation.getDeliveryAddress(), restaurant.getName()));
+
     return new ResultWithDomainEvents<>(order, events);
   }
 
@@ -60,7 +74,8 @@ public class Order {
   private Order() {
   }
 
-  public Order(long consumerId, long restaurantId, DeliveryInformation deliveryInformation, List<OrderLineItem> orderLineItems) {
+  public Order(long consumerId, long restaurantId, DeliveryInformation deliveryInformation,
+      List<OrderLineItem> orderLineItems) {
     this.consumerId = consumerId;
     this.restaurantId = restaurantId;
     this.deliveryInformation = deliveryInformation;
@@ -137,7 +152,6 @@ public class Order {
 
   }
 
-
   public List<OrderDomainEvent> noteReversingAuthorization() {
     return null;
   }
@@ -151,7 +165,8 @@ public class Order {
           throw new OrderMinimumNotMetException();
         }
         this.state = REVISION_PENDING;
-        return new ResultWithDomainEvents<>(change, singletonList(new OrderRevisionProposed(orderRevision, change.currentOrderTotal, change.newOrderTotal)));
+        return new ResultWithDomainEvents<>(change,
+            singletonList(new OrderRevisionProposed(orderRevision, change.currentOrderTotal, change.newOrderTotal)));
 
       default:
         throw new UnsupportedStateTransitionException(state);
@@ -186,7 +201,6 @@ public class Order {
     }
   }
 
-
   public Long getVersion() {
     return version;
   }
@@ -203,9 +217,7 @@ public class Order {
     return restaurantId;
   }
 
-
   public Long getConsumerId() {
     return consumerId;
   }
 }
-

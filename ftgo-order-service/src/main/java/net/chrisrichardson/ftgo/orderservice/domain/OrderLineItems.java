@@ -38,31 +38,30 @@ public class OrderLineItems {
   }
 
   Money changeToOrderTotal(OrderRevision orderRevision) {
-    return orderRevision
-            .getRevisedOrderLineItems()
-            .stream()
-            .map(item -> {
-              OrderLineItem lineItem = findOrderLineItem(item.getMenuItemId());
-              return lineItem.deltaForChangedQuantity(item.getQuantity());
-            })
-            .reduce(Money.ZERO, Money::add);
+    return orderRevision.getRevisedOrderLineItems().stream().map(item -> {
+      OrderLineItem lineItem = findOrderLineItem(item.getMenuItemId());
+      return lineItem.deltaForChangedQuantity(item.getQuantity());
+    }).reduce(Money.ZERO, Money::add);
   }
 
   void updateLineItems(OrderRevision orderRevision) {
     getLineItems().stream().forEach(li -> {
 
-      Optional<Integer> revised = orderRevision.getRevisedOrderLineItems()
-              .stream()
-              .filter(item -> Objects.equals(li.getMenuItemId(), item.getMenuItemId()))
-              .map(RevisedOrderLineItem::getQuantity)
-              .findFirst();
+      Optional<Integer> revised = orderRevision.getRevisedOrderLineItems().stream()
+          .filter(item -> Objects.equals(li.getMenuItemId(), item.getMenuItemId()))
+          .map(RevisedOrderLineItem::getQuantity).findFirst();
 
-      li.setQuantity(revised.orElseThrow(() ->
-              new IllegalArgumentException(String.format("menu item id not found.", li.getMenuItemId()))));
+      li.setQuantity(revised.orElseThrow(
+          () -> new IllegalArgumentException(String.format("menu item id not found.", li.getMenuItemId()))));
     });
   }
 
   Money orderTotal() {
+    /**
+     * Performs a reduction on the elements of this stream, using the provided
+     * identity value and an associative accumulation function, and returns the
+     * reduced value. but is not constrained to execute sequentially.
+     */
     return lineItems.stream().map(OrderLineItem::getTotal).reduce(Money.ZERO, Money::add);
   }
 

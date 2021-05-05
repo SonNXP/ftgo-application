@@ -11,6 +11,15 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 
+/**
+ * Specifies a class whose instances are stored as an intrinsic part of an
+ * owning entity and share the identity of the entity. Each of the persistent
+ * properties or fields of the embedded object is mapped to the database table
+ * for the entity.
+ * 
+ * Note that the Transient annotation may be used to designate the
+ * non-persistent state of an embeddable class.
+ */
 @Embeddable
 public class OrderLineItem {
 
@@ -22,7 +31,7 @@ public class OrderLineItem {
   private String name;
 
   @Embedded
-  @AttributeOverrides(@AttributeOverride(name="amount", column=@Column(name="price")))
+  @AttributeOverrides(@AttributeOverride(name = "amount", column = @Column(name = "price")))
   private Money price;
 
   @Override
@@ -35,6 +44,9 @@ public class OrderLineItem {
     return EqualsBuilder.reflectionEquals(this, o);
   }
 
+  /**
+   * https://stackoverflow.com/questions/10912646/hashcodebuilder-and-equalsbuilder-usage-style
+   */
   @Override
   public int hashCode() {
     return HashCodeBuilder.reflectionHashCode(this);
@@ -82,7 +94,6 @@ public class OrderLineItem {
   public Money getPrice() {
     return price;
   }
-
 
   public Money getTotal() {
     return price.multiply(quantity);
