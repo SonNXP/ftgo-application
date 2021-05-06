@@ -22,6 +22,8 @@ public class ConsumerService {
     consumer.orElseThrow(ConsumerNotFoundException::new).validateOrderByConsumer(orderTotal);
   }
 
+  // Each step of an orchestration-based saga consists of a service updating a
+    // database and publishing a message.
   @Transactional
   public ResultWithEvents<Consumer> create(PersonName name) {
     ResultWithEvents<Consumer> rwe = Consumer.create(name);

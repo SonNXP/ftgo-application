@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 
 import static io.eventuate.tram.commands.consumer.CommandWithDestinationBuilder.send;
-
+// Revise order business logic is defined here ReviseOrderSaga
 public class ReviseOrderSaga implements SimpleSaga<ReviseOrderSagaData> {
 
   private Logger logger = LoggerFactory.getLogger(getClass());

@@ -18,7 +18,7 @@ import org.springframework.util.Assert;
 import javax.annotation.PostConstruct;
 
 import static io.eventuate.tram.commands.consumer.CommandWithDestinationBuilder.send;
-
+// Cancel order business logic is defined here CancelOrderSaga
 public class CancelOrderSaga implements SimpleSaga<CancelOrderSagaData> {
 
 

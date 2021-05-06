@@ -10,7 +10,6 @@ import java.util.Optional;
 @Transactional
 public class RestaurantService {
 
-
   @Autowired
   private RestaurantRepository restaurantRepository;
 
@@ -18,9 +17,12 @@ public class RestaurantService {
   private RestaurantDomainEventPublisher restaurantDomainEventPublisher;
 
   public Restaurant create(CreateRestaurantRequest request) {
+    // Each step of an orchestration-based saga consists of a service updating a
+    // database and publishing a message.
     Restaurant restaurant = new Restaurant(request.getName(), request.getMenu());
     restaurantRepository.save(restaurant);
-    restaurantDomainEventPublisher.publish(restaurant, Collections.singletonList(new RestaurantCreated(request.getName(), request.getAddress(), request.getMenu())));
+    restaurantDomainEventPublisher.publish(restaurant,
+        Collections.singletonList(new RestaurantCreated(request.getName(), request.getAddress(), request.getMenu())));
     return restaurant;
   }
 

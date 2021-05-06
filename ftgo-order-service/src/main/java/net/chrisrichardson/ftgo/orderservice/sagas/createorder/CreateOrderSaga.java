@@ -72,3 +72,23 @@ public class CreateOrderSaga implements SimpleSaga<CreateOrderSagaState> {
   }
 
 }
+
+
+/** Summary */
+// CreateOrderSaga - defines business logic of order service
+// saga participant = service OR service proxy - defines Endpoints (Command, Channel, Reply)
+// Each Step can includes: invokeParticipant, onReply, withCompensation (rollback by reserve order of invokeParticipant)
+/** 1 The saga orchestrator sends a Verify Consumer command to Consumer Service.
+2 Consumer Service replies with a Consumer Verified message.
+3 The saga orchestrator sends a Create Ticket command to Kitchen Service.
+  3.a ConsumerVerificationFailed -> the saga send a RejectOrder to Order Service
+4 Kitchen Service replies with a Ticket Created message.
+5 The saga orchestrator sends an Authorize Card message to Accounting Service.
+6 Accounting Service replies with a Card Authorized message.
+7 The saga orchestrator sends an Approve Ticket command to Kitchen Service.
+8 The saga orchestrator sends an Approve Order command to Order Service.
+ */
+// https://www.prakharsrivastav.com/posts/saga-orchestration-in-microservices/
+// Each micro-service replies back to orchestrator on the Reply channel. The service replies to the operation with 2 statuses
+// Done: When the intended operation was successful. The orchestrator executes the next service in the pipeline.
+// Error: When either of the service errors out. The orchestrator asks all the services to rollback the transaction.

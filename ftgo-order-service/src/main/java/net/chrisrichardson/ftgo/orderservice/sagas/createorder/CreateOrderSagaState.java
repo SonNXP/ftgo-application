@@ -16,6 +16,23 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
+/** A state machine consists of a set of states and a set of transitions between states that are triggered by events. 
+ * Each transition can have an action, which for a saga is the invocation of a
+saga participant. The transitions between states are triggered by the completion of a
+local transaction performed by a saga participant. The current state and the specific
+outcome of the local transaction determine the state transition and what action, if
+any, to perform. There are also effective testing strategies for state machines. As a
+result, using a state machine model makes designing, implementing, and testing
+sagas easier. */
+
+// A saga’s persistent state (trạng thái dai dẳng), which creates command messages.
+/**
+ * represents the state of a saga instance. An instance of this class is created
+ * by OrderService and is persisted in the database by the Eventuate Tram Saga
+ * framework. Its primary responsibility is to create the messages that are sent
+ * to saga participants.
+ */
+// Saga participant = service
 public class CreateOrderSagaState {
 
   private Logger logger = LoggerFactory.getLogger(getClass());
@@ -63,6 +80,7 @@ public class CreateOrderSagaState {
     return ticketId;
   }
 
+  // Creates a CreateTicket command message
   CreateTicket makeCreateTicketCommand() {
     return new CreateTicket(getOrderDetails().getRestaurantId(), getOrderId(), makeTicketDetails(getOrderDetails()));
   }
@@ -102,7 +120,8 @@ public class CreateOrderSagaState {
   }
 
   AuthorizeCommand makeAuthorizeCommand() {
-    return new AuthorizeCommand().withConsumerId(getOrderDetails().getConsumerId()).withOrderId(getOrderId()).withOrderTotal(getOrderDetails().getOrderTotal().asString());
+    return new AuthorizeCommand().withConsumerId(getOrderDetails().getConsumerId()).withOrderId(getOrderId())
+        .withOrderTotal(getOrderDetails().getOrderTotal().asString());
   }
 
   ApproveOrderCommand makeApproveOrderCommand() {

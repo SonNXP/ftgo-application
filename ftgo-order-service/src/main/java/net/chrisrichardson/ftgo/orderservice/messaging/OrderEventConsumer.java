@@ -7,7 +7,7 @@ import net.chrisrichardson.ftgo.orderservice.domain.OrderService;
 import net.chrisrichardson.ftgo.restaurantservice.events.RestaurantCreated;
 import net.chrisrichardson.ftgo.restaurantservice.events.RestaurantMenuRevised;
 
-
+// Subscribes to events published by Restaurant Service. It invokes OrderService to create and update its replica (copy) of Restaurants.
 public class OrderEventConsumer {
 
   private OrderService orderService;

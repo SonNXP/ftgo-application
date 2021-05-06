@@ -32,7 +32,8 @@ public class KitchenService {
             .orElseThrow(() -> new TicketNotFoundException(ticketId));
     restaurant.reviseMenu(revisedMenu);
   }
-
+// Each step of an orchestration-based saga consists of a service updating a
+    // database and publishing a message.
   public Ticket createTicket(long restaurantId, Long ticketId, TicketDetails ticketDetails) {
     ResultWithDomainEvents<Ticket, TicketDomainEvent> rwe = Ticket.create(restaurantId, ticketId, ticketDetails);
     ticketRepository.save(rwe.result);

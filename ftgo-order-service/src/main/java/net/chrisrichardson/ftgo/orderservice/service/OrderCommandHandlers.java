@@ -19,25 +19,26 @@ import java.util.Optional;
 import static io.eventuate.tram.commands.consumer.CommandHandlerReplyBuilder.withFailure;
 import static io.eventuate.tram.commands.consumer.CommandHandlerReplyBuilder.withSuccess;
 
+// defines the handler methods for the command messages sent by these sagas (CreateOrderSaga, CancelOrderSaga, ReviseOrderSaga).
+// Order Service participates in its own sagas.
+// Detail: Figure 4.15 OrderCommandHandlers implements command handlers for the commands that are sent by the various Order Service sagas.
 public class OrderCommandHandlers {
 
   @Autowired
   private OrderService orderService;
 
   public CommandHandlers commandHandlers() {
-    return SagaCommandHandlersBuilder
-          .fromChannel("orderService")
-          .onMessage(ApproveOrderCommand.class, this::approveOrder)
-          .onMessage(RejectOrderCommand.class, this::rejectOrder)
+    return SagaCommandHandlersBuilder.fromChannel("orderService")
+        .onMessage(ApproveOrderCommand.class, this::approveOrder)
+        .onMessage(RejectOrderCommand.class, this::rejectOrder)
 
-          .onMessage(BeginCancelCommand.class, this::beginCancel)
-          .onMessage(UndoBeginCancelCommand.class, this::undoCancel)
-          .onMessage(ConfirmCancelOrderCommand.class, this::confirmCancel)
+        .onMessage(BeginCancelCommand.class, this::beginCancel)
+        .onMessage(UndoBeginCancelCommand.class, this::undoCancel)
+        .onMessage(ConfirmCancelOrderCommand.class, this::confirmCancel)
 
-          .onMessage(BeginReviseOrderCommand.class, this::beginReviseOrder)
-          .onMessage(UndoBeginReviseOrderCommand.class, this::undoPendingRevision)
-          .onMessage(ConfirmReviseOrderCommand.class, this::confirmRevision)
-          .build();
+        .onMessage(BeginReviseOrderCommand.class, this::beginReviseOrder)
+        .onMessage(UndoBeginReviseOrderCommand.class, this::undoPendingRevision)
+        .onMessage(ConfirmReviseOrderCommand.class, this::confirmRevision).build();
 
   }
 
@@ -47,13 +48,11 @@ public class OrderCommandHandlers {
     return withSuccess();
   }
 
-
   public Message rejectOrder(CommandMessage<RejectOrderCommand> cm) {
     long orderId = cm.getCommand().getOrderId();
     orderService.rejectOrder(orderId);
     return withSuccess();
   }
-
 
   public Message beginCancel(CommandMessage<BeginCancelCommand> cm) {
     long orderId = cm.getCommand().getOrderId();
@@ -64,7 +63,6 @@ public class OrderCommandHandlers {
       return withFailure();
     }
   }
-
 
   public Message undoCancel(CommandMessage<UndoBeginCancelCommand> cm) {
     long orderId = cm.getCommand().getOrderId();
@@ -78,18 +76,19 @@ public class OrderCommandHandlers {
     return withSuccess();
   }
 
-
   public Message beginReviseOrder(CommandMessage<BeginReviseOrderCommand> cm) {
     long orderId = cm.getCommand().getOrderId();
     OrderRevision revision = cm.getCommand().getRevision();
     try {
-      return orderService.beginReviseOrder(orderId, revision).map(result -> withSuccess(new BeginReviseOrderReply(result.getChange().getNewOrderTotal()))).orElseGet(CommandHandlerReplyBuilder::withFailure);
+      return orderService.beginReviseOrder(orderId, revision)
+          .map(result -> withSuccess(new BeginReviseOrderReply(result.getChange().getNewOrderTotal())))
+          .orElseGet(CommandHandlerReplyBuilder::withFailure);
     } catch (UnsupportedStateTransitionException e) {
       return withFailure();
     }
   }
 
-  public Message undoPendingRevision(CommandMessage <UndoBeginReviseOrderCommand> cm) {
+  public Message undoPendingRevision(CommandMessage<UndoBeginReviseOrderCommand> cm) {
     long orderId = cm.getCommand().getOrderId();
     orderService.undoPendingRevision(orderId);
     return withSuccess();
