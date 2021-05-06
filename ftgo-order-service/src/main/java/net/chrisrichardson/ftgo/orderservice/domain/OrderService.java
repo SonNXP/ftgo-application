@@ -106,7 +106,8 @@ public class OrderService {
     OrderDetails orderDetails = new OrderDetails(consumerId, restaurantId, orderLineItems, order.getOrderTotal());
 
     CreateOrderSagaState data = new CreateOrderSagaState(order.getId(), orderDetails);
-    // Make thí service is a Saga?
+    // Saga is a local transactions that represent for a business logic. Page 117 pdf
+    // createOrderSaga has Order business logic and data is an input data for the order
     sagaInstanceFactory.create(createOrderSaga, data);
 
     meterRegistry.ifPresent(mr -> mr.counter("placed_orders").increment());

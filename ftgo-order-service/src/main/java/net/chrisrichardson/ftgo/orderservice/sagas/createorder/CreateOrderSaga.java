@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
  * from its reply channel and then determines the next step, if any, in the
  * saga. Page-122 pdf book
  */
+// Order business logic is defined here CreateOrderSaga
 public class CreateOrderSaga implements SimpleSaga<CreateOrderSagaState> {
 
   private Logger logger = LoggerFactory.getLogger(getClass());
@@ -24,18 +25,47 @@ public class CreateOrderSaga implements SimpleSaga<CreateOrderSagaState> {
   // The CreateOrderSaga class implements the state machine shown earlier in
   // figure 4.7. It uses the DSL (domain-specific language) provided by the
   // Eventuate Tram Saga framework to define the steps of the Create Order Saga.
+  // Listing 4.3 The definition of the third step of the saga
   public CreateOrderSaga(OrderServiceProxy orderService, ConsumerServiceProxy consumerService,
       KitchenServiceProxy kitchenService, AccountingServiceProxy accountingService) {
-    this.sagaDefinition = step().withCompensation(orderService.reject, CreateOrderSagaState::makeRejectOrderCommand)
-        .step()
+    this.sagaDefinition = step() // step 1: include create order
+    .withCompensation(orderService.reject, CreateOrderSagaState::makeRejectOrderCommand)
+        .step() // step 2
+        // Define the forward transaction.
         .invokeParticipant(consumerService.validateOrder, CreateOrderSagaState::makeValidateOrderByConsumerCommand)
-        .step().invokeParticipant(kitchenService.create, CreateOrderSagaState::makeCreateTicketCommand)
+        // 3 third step
+        .step() // step 3
+        // Define the forward transaction. It creates the CreateTicket command message
+        // by calling CreateOrderSagaState.makeCreateTicketCommand() and sends it to
+        // the channel specified by kitchenService.create.
+        /**
+         * public final CommandEndpoint<CreateTicket> create = CommandEndpointBuilder
+         * .forCommand(CreateTicket.class)
+         * .withChannel(KitchenServiceChannels.COMMAND_CHANNEL)
+         * .withReply(CreateTicketReply.class) .build();
+         */
+        /**
+         * CreateOrderSagaState::makeCreateTicketCommand = return new
+         * CreateTicket(getOrderDetails().getRestaurantId(), getOrderId(),
+         * makeTicketDetails(getOrderDetails()));
+         */
+        .invokeParticipant(kitchenService.create, CreateOrderSagaState::makeCreateTicketCommand)
+        // Call handleCreateTicketReply() when a successful reply is received.
         .onReply(CreateTicketReply.class, CreateOrderSagaState::handleCreateTicketReply)
-        .withCompensation(kitchenService.cancel, CreateOrderSagaState::makeCancelCreateTicketCommand).step()
-        .invokeParticipant(accountingService.authorize, CreateOrderSagaState::makeAuthorizeCommand).step()
-        .invokeParticipant(kitchenService.confirmCreate, CreateOrderSagaState::makeConfirmCreateTicketCommand).step()
+        // Define the compensating transaction (Rollback when reply is error). The saga
+        // executes the compensation transactions in reverse order of the forward
+        // transactions - Page 116 pdf book
+        // It creates a RejectTicket- Command command message by calling
+        // CreateOrderSagaState.makeCancelCreateTicket() and sends it to the channel
+        // specified by kitchenService.cancel
+        .withCompensation(kitchenService.cancel, CreateOrderSagaState::makeCancelCreateTicketCommand)
+        .step() // step 4
+        .invokeParticipant(accountingService.authorize, CreateOrderSagaState::makeAuthorizeCommand)
+        .step() // step 5
+        .invokeParticipant(kitchenService.confirmCreate, CreateOrderSagaState::makeConfirmCreateTicketCommand)
+        .step() // step 6
         .invokeParticipant(orderService.approve, CreateOrderSagaState::makeApproveOrderCommand).build();
-
+        // Detail in Table 4.1 The compensating transactions for the Create Order Saga
   }
 
   @Override
