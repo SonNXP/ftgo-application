@@ -28,9 +28,9 @@ public class CreateOrderSaga implements SimpleSaga<CreateOrderSagaState> {
   // Listing 4.3 The definition of the third step of the saga
   public CreateOrderSaga(OrderServiceProxy orderService, ConsumerServiceProxy consumerService,
       KitchenServiceProxy kitchenService, AccountingServiceProxy accountingService) {
-    this.sagaDefinition = step() // step 1: include create order
-    .withCompensation(orderService.reject, CreateOrderSagaState::makeRejectOrderCommand)
-        .step() // step 2
+    this.sagaDefinition = step() // step 1: include create order. Rest API - POST order -> new createOrder(). In
+                                 // this example createOrderSaga is in OrderService
+        .withCompensation(orderService.reject, CreateOrderSagaState::makeRejectOrderCommand).step() // step 2
         // Define the forward transaction.
         .invokeParticipant(consumerService.validateOrder, CreateOrderSagaState::makeValidateOrderByConsumerCommand)
         // 3 third step
@@ -58,14 +58,12 @@ public class CreateOrderSaga implements SimpleSaga<CreateOrderSagaState> {
         // It creates a RejectTicket- Command command message by calling
         // CreateOrderSagaState.makeCancelCreateTicket() and sends it to the channel
         // specified by kitchenService.cancel
-        .withCompensation(kitchenService.cancel, CreateOrderSagaState::makeCancelCreateTicketCommand)
-        .step() // step 4
-        .invokeParticipant(accountingService.authorize, CreateOrderSagaState::makeAuthorizeCommand)
-        .step() // step 5
-        .invokeParticipant(kitchenService.confirmCreate, CreateOrderSagaState::makeConfirmCreateTicketCommand)
-        .step() // step 6
+        .withCompensation(kitchenService.cancel, CreateOrderSagaState::makeCancelCreateTicketCommand).step() // step 4
+        .invokeParticipant(accountingService.authorize, CreateOrderSagaState::makeAuthorizeCommand).step() // step 5
+        .invokeParticipant(kitchenService.confirmCreate, CreateOrderSagaState::makeConfirmCreateTicketCommand).step() // step
+                                                                                                                      // 6
         .invokeParticipant(orderService.approve, CreateOrderSagaState::makeApproveOrderCommand).build();
-        // Detail in Table 4.1 The compensating transactions for the Create Order Saga
+    // Detail in Table 4.1 The compensating transactions for the Create Order Saga
   }
 
   @Override
