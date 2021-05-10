@@ -81,6 +81,7 @@ public class OrderCommandHandlers {
     OrderRevision revision = cm.getCommand().getRevision();
     try {
       return orderService.beginReviseOrder(orderId, revision)
+          // Define onReply for beginReviseOrder here, that return after call invokeParticipant(this::beginReviseOrder)
           .map(result -> withSuccess(new BeginReviseOrderReply(result.getChange().getNewOrderTotal())))
           .orElseGet(CommandHandlerReplyBuilder::withFailure);
     } catch (UnsupportedStateTransitionException e) {

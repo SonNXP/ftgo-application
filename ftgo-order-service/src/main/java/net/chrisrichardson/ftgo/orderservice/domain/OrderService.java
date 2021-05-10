@@ -106,10 +106,13 @@ public class OrderService {
     OrderDetails orderDetails = new OrderDetails(consumerId, restaurantId, orderLineItems, order.getOrderTotal());
 
     CreateOrderSagaState data = new CreateOrderSagaState(order.getId(), orderDetails);
-    // Saga is a local transactions that represent for a business logic. Page 117 pdf
+    // Saga is sequence of local transactions that represent for a business logic. Page 117 pdf
     // createOrderSaga has Order business logic and data is an input data for the order
     sagaInstanceFactory.create(createOrderSaga, data);
 
+    // Count number of "placed_orders", may include time points for each count. This is Spring Boot tool MicroMeter
+    // https://dzone.com/articles/using-micrometer-with-spring-boot-2
+    // https://www.baeldung.com/micrometer
     meterRegistry.ifPresent(mr -> mr.counter("placed_orders").increment());
 
     return order;
@@ -120,7 +123,7 @@ public class OrderService {
      * Using stream, you can process data in a declarative way similar to SQL
      * statements. For example, consider the following SQL statement. SELECT
      * max(salary), employee_id, employee_name FROM Employee. The ‘map’ method is
-     * used to map each element to its corresponding result.
+     * used to map/modify each element to its corresponding result.
      */
     return lineItems.stream().map(li -> {
       MenuItem om = restaurant.findMenuItem(li.getMenuItemId())

@@ -60,6 +60,8 @@ public class OrderServiceTest {
 
   @Test
   public void shouldCreateOrder() {
+    // Setup bussiness logic by Mock
+    // When a method in mock is called then do something as below defines, this replace for real job
     when(restaurantRepository.findById(AJANTA_ID)).thenReturn(Optional.of(AJANTA_RESTAURANT));
     when(orderRepository.save(any(Order.class))).then(invocation -> {
       Order order = (Order) invocation.getArguments()[0];
