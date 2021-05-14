@@ -15,6 +15,12 @@ import static net.chrisrichardson.ftgo.orderservice.RestaurantMother.AJANTA_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * JUnit Runners are highly customizable and give you the option to change to
+ * complete test execution process. The cool thing is that can change the whole
+ * test process and still use all the JUnit integration points of your IDE,
+ * build server, etc.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = OrderJpaTestConfiguration.class)
 public class OrderJpaTest {
