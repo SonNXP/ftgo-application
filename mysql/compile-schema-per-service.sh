@@ -12,3 +12,4 @@ do
 END
     cat /docker-entrypoint-initdb.d/template >> /docker-entrypoint-initdb.d/5.schema-per-service.sql
 done
+ 

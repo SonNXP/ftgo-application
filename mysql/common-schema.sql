@@ -1,6 +1,6 @@
-
+DROP DATABASE IF exists eventuate;
 create database eventuate;
-GRANT ALL PRIVILEGES ON eventuate.* TO 'mysqluser'@'%' WITH GRANT OPTION;
+-- CREATE USER eventuate.* TO 'mysqluser'@'%' WITH GRANT OPTION;
 
 USE eventuate;
 
